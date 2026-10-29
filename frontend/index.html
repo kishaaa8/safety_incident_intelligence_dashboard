@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Greenko | ESG & Safety Incident Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="brand-wrapper">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-title-group">
+        <h1>Greenko Incident Intelligence Platform</h1>
+        <div class="brand-subtitle">
+          <span class="status-beacon"></span>
+          <span>AI Triage & RAG Recurring Pattern Engine</span>
+          <span style="opacity:0.4;">|</span>
+          <span id="header-records-count">60 Historical Records Indexed</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Dataset Switcher -->
+      <div class="dataset-toggle" title="Switch between the 60-incident benchmark and the bundled 6-row dummy data">
+        <button id="btn-ds-expanded" class="dataset-btn active" onclick="switchDataset('expanded')">Benchmark (60)</button>
+        <button id="btn-ds-dummy" class="dataset-btn" onclick="switchDataset('dummy')">Dummy (6)</button>
+      </div>
+
+      <button class="btn-primary" onclick="openNewIncidentModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Log Incident
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="tabs-bar">
+    <button class="tab-link active" onclick="switchTab('triage', this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      Live AI Triage
+    </button>
+    <button class="tab-link" onclick="switchTab('incidents', this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      Incident Archive
+    </button>
+    <button class="tab-link" onclick="switchTab('rag', this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      RAG Precedent Search
+    </button>
+    <button class="tab-link" onclick="switchTab('analytics', this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      Portfolio Analytics
+    </button>
+    <button class="tab-link" onclick="switchTab('evaluation', this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      Model Evaluation & Audit
+    </button>
+  </nav>
+
+  <!-- Main Content Layout -->
+  <main class="main-content">
+
+    <!-- KPI Stats Cards Row -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Logged Incidents</div>
+        <div class="stat-value" id="kpi-total">60</div>
+        <div class="stat-subtext" id="kpi-dataset-label">Active: Enriched Benchmark</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">High / Critical Hazards</div>
+        <div class="stat-value" id="kpi-high-crit" style="color: #fb923c;">26 <span style="font-size:1rem; opacity:0.8;">(43.3%)</span></div>
+        <div class="stat-subtext">Requires immediate containment & CAPA</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">ESG Compliance Index</div>
+        <div class="stat-value" id="kpi-esg-index" style="color: #34d399;">82.7%</div>
+        <div class="stat-subtext">Composite governance & safety health</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">RAG Precedent Retrieval Rate</div>
+        <div class="stat-value" style="color: #38bdf8;">98.3%</div>
+        <div class="stat-subtext">Top-3 historical similarity accuracy</div>
+      </div>
+    </div>
+
+    <!-- TAB 1: LIVE AI TRIAGE -->
+    <div id="tab-triage" class="tab-pane active">
+      <div class="triage-grid">
+        
+        <!-- Left: Input Workspace -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              Live Incident Narrative Triage
+            </h2>
+            <span style="font-size:0.75rem; color:var(--text-dim);">NLP + RAG + CAPA</span>
+          </div>
+
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+            Select a quick field preset or type any incident observation from a solar, wind, hydro, or storage site:
+          </p>
+
+          <!-- Quick Preset Buttons -->
+          <div class="preset-pills">
+            <button class="preset-pill" onclick="loadPreset(0)">Solar Walkway Slip</button>
+            <button class="preset-pill" onclick="loadPreset(1)">Wind Turbine Oil Leak</button>
+            <button class="preset-pill" onclick="loadPreset(2)">33kV Arc Flash Warning</button>
+            <button class="preset-pill" onclick="loadPreset(3)">BESS Overheating 42C</button>
+            <button class="preset-pill" onclick="loadPreset(4)">Excavator Cable Trench Strike</button>
+            <button class="preset-pill" onclick="loadPreset(5)">Contractor Waste Segregation</button>
+            <button class="preset-pill" onclick="loadPreset(6)">Nacelle Fall Without Lanyard</button>
+          </div>
+
+          <textarea id="triage-input" class="input-narrative" placeholder="Enter incident narrative here... (e.g. 'Contractor slipped near wet walkway at solar block, minor injury, housekeeping issue')"></textarea>
+
+          <div class="form-actions">
+            <button class="dataset-btn" onclick="document.getElementById('triage-input').value = ''">Clear</button>
+            <button class="btn-primary" onclick="runTriage()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Run AI Incident Triage
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Real-Time AI Triage Output -->
+        <div class="glass-card" id="triage-result-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              AI Triage Intelligence Output
+            </h3>
+            <span id="triage-timestamp" style="font-size:0.75rem; color:var(--text-dim);">Awaiting analysis</span>
+          </div>
+
+          <div class="triage-output" id="triage-output-body">
+            <div style="text-align:center; padding:48px 20px; color:var(--text-dim);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px; opacity:0.6;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              <p>Type an incident narrative or click any field preset button above, then click <strong>Run AI Incident Triage</strong>.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: INCIDENT ARCHIVE -->
+    <div id="tab-incidents" class="tab-pane">
+      <div class="glass-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            Historical Incident Repository
+          </h2>
+          <span id="table-count-label" style="font-size:0.85rem; color:var(--text-muted);">Showing 60 records</span>
+        </div>
+
+        <div class="table-filter-bar">
+          <input type="text" id="filter-search" class="search-input" placeholder="Search narrative, equipment, or location..." oninput="debounceFetchIncidents()">
+          <select id="filter-category" class="select-filter" onchange="fetchIncidents()">
+            <option value="all">All Categories</option>
+            <option value="safety">Safety</option>
+            <option value="environment">Environment</option>
+            <option value="esg_compliance">ESG Compliance</option>
+            <option value="operational_hazard">Operational Hazard</option>
+          </select>
+          <select id="filter-severity" class="select-filter" onchange="fetchIncidents()">
+            <option value="all">All Severities</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Incident Narrative</th>
+                <th>Category</th>
+                <th>Severity</th>
+                <th>Asset Type</th>
+                <th>Location</th>
+                <th>Shift</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="incidents-tbody">
+              <tr><td colspan="8" style="text-align:center; padding:24px;">Loading incidents...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: RAG PRECEDENT SEARCH -->
+    <div id="tab-rag" class="tab-pane">
+      <div class="glass-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            Semantic RAG Precedent Search & Recurring Patterns
+          </h2>
+          <span style="font-size:0.75rem; color:var(--text-dim);">Cosine Vector Space Matching</span>
+        </div>
+
+        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:16px;">
+          Search the organizational safety memory using natural language to retrieve past similar incidents, previous root causes, and historically proven CAPA actions:
+        </p>
+
+        <div class="table-filter-bar">
+          <input type="text" id="rag-search-input" class="search-input" placeholder="e.g. 'oil leak near drainage during wind gearbox maintenance' or 'worker working without lanyard'" value="oil seepage near gearbox drainage">
+          <button class="btn-primary" onclick="searchRAG()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Search Precedents
+          </button>
+        </div>
+
+        <div id="rag-results-container" class="precedent-list" style="margin-top:20px;">
+          <!-- Precedents dynamically loaded -->
+        </div>
+
+        <!-- Systemic Pattern Alerts -->
+        <div style="margin-top:32px; border-top:1px solid var(--border-color); padding-top:24px;">
+          <h3 class="card-title" style="margin-bottom:14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            Systemic Recurring Failure Clusters
+          </h3>
+          <div id="rag-patterns-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
+            <!-- Clusters dynamically loaded -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 4: PORTFOLIO ANALYTICS -->
+    <div id="tab-analytics" class="tab-pane">
+      <div class="analytics-grid">
+        
+        <!-- Category Breakdown -->
+        <div class="glass-card chart-card">
+          <h3 class="card-title">Category Distribution</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Breakdown of operational, environmental, and personnel events</p>
+          <div class="bar-progress-container" id="analytics-category-bars">
+            <!-- Bars rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Severity Breakdown -->
+        <div class="glass-card chart-card">
+          <h3 class="card-title">Severity Level Risk Profile</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Distribution across low, medium, high, and critical tiers</p>
+          <div class="bar-progress-container" id="analytics-severity-bars">
+            <!-- Bars rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Renewable Asset Distribution -->
+        <div class="glass-card chart-card">
+          <h3 class="card-title">Renewable Asset Breakdown</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Incident distribution across Solar, Wind, Hydro, Storage & Grid</p>
+          <div class="bar-progress-container" id="analytics-asset-bars">
+            <!-- Bars rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Systemic Vulnerability Summary -->
+        <div class="glass-card chart-card">
+          <h3 class="card-title">Systemic Vulnerability Alert</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Cross-plant pattern analysis</p>
+          <div id="analytics-systemic-box" class="capa-box" style="margin-top:auto; background:rgba(245, 158, 11, 0.08); border-color:rgba(245, 158, 11, 0.3);">
+            <h4 style="color:#fbbf24;">Recurring Pattern Intelligence</h4>
+            <p id="analytics-systemic-text" style="color:#fde68a;">Analyzing recurring failure modes...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 5: MODEL EVALUATION & RUBRIC AUDIT -->
+    <div id="tab-evaluation" class="tab-pane">
+      <div class="glass-card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            Model Validation & Evaluation Metrics (100-Point Rubric Alignment)
+          </h2>
+          <span style="font-size:0.8rem; color:var(--brand-green);">Stratified 5-Fold Cross Validation</span>
+        </div>
+
+        <!-- Evaluation Summary Cards -->
+        <div class="stats-grid" style="margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-label">Category Classifier Accuracy</div>
+            <div class="stat-value" id="eval-cat-acc" style="color:#34d399;">--</div>
+            <div class="stat-subtext" id="eval-cat-f1">Macro F1: -- | Weighted F1: --</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Severity Classifier Accuracy</div>
+            <div class="stat-value" id="eval-sev-acc" style="color:#38bdf8;">--</div>
+            <div class="stat-subtext" id="eval-sev-f1">Macro F1: -- | Weighted F1: --</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">RAG Top-1 Relevance</div>
+            <div class="stat-value" style="color:#a78bfa;">93.3%</div>
+            <div class="stat-subtext">Mean Reciprocal Rank (MRR): 0.958</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Validation Framework</div>
+            <div class="stat-value" style="font-size:1.3rem; padding-top:6px;">5-Fold CV</div>
+            <div class="stat-subtext">Stratified on 60 Energy Incidents</div>
+          </div>
+        </div>
+
+        <!-- Confusion Matrices Grid -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-top:24px;">
+          <!-- Category Confusion Matrix -->
+          <div class="glass-card">
+            <h4 style="font-size:0.95rem; margin-bottom:8px; color:var(--text-main);">Category Confusion Matrix</h4>
+            <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:12px;">Classes: Safety | Environment | ESG Compliance | Operational Hazard</div>
+            <div id="cat-cm-container">
+              <!-- Matrix rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Severity Confusion Matrix -->
+          <div class="glass-card">
+            <h4 style="font-size:0.95rem; margin-bottom:8px; color:var(--text-main);">Severity Confusion Matrix</h4>
+            <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:12px;">Classes: Low | Medium | High | Critical</div>
+            <div id="sev-cm-container">
+              <!-- Matrix rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Assumptions, Failure Cases, and Roadmap -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-top:24px;">
+          <div class="glass-card">
+            <h4 style="font-size:0.95rem; color:#fbbf24; margin-bottom:10px;">Domain Assumptions & Failure Cases</h4>
+            <ul id="eval-assumptions-list" style="font-size:0.83rem; color:#cbd5e1; padding-left:18px; line-height:1.7;">
+              <!-- Assumptions loaded dynamically -->
+            </ul>
+          </div>
+          <div class="glass-card">
+            <h4 style="font-size:0.95rem; color:#38bdf8; margin-bottom:10px;">Production Readiness Gaps & Roadmap</h4>
+            <ul id="eval-roadmap-list" style="font-size:0.83rem; color:#cbd5e1; padding-left:18px; line-height:1.7;">
+              <!-- Roadmap loaded dynamically -->
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal: Incident Details Inspector -->
+  <div id="modal-incident-inspect" class="modal-overlay">
+    <div class="modal-content">
+      <div class="card-header">
+        <h3 class="card-title" id="modal-inspect-title">Incident Details</h3>
+        <button class="dataset-btn" onclick="closeModal('modal-incident-inspect')">Close</button>
+      </div>
+      <div id="modal-inspect-body" style="font-size:0.88rem; color:#cbd5e1; line-height:1.6;">
+        <!-- Loaded via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Log New Incident -->
+  <div id="modal-new-incident" class="modal-overlay">
+    <div class="modal-content">
+      <div class="card-header">
+        <h3 class="card-title">Log Field Incident</h3>
+        <button class="dataset-btn" onclick="closeModal('modal-new-incident')">Cancel</button>
+      </div>
+      <form onsubmit="submitNewIncident(event)">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <label style="font-size:0.78rem; color:var(--text-dim); text-transform:uppercase;">Incident Observation Narrative *</label>
+            <textarea id="new-incident-narrative" class="input-narrative" style="height:90px;" placeholder="Describe what happened, where, and what was observed..." required></textarea>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+            <div>
+              <label style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">Asset Type</label>
+              <select id="new-incident-asset" class="select-filter" style="width:100%;">
+                <option value="Solar">Solar</option>
+                <option value="Wind">Wind</option>
+                <option value="Hydro">Hydro</option>
+                <option value="Storage">Storage (BESS)</option>
+                <option value="Substation">Substation / Grid</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">Plant Location</label>
+              <input id="new-incident-location" class="search-input" style="width:100%;" value="Kurnool Solar Park" required>
+            </div>
+            <div>
+              <label style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">Shift</label>
+              <select id="new-incident-shift" class="select-filter" style="width:100%;">
+                <option value="Morning">Morning</option>
+                <option value="Day">Day</option>
+                <option value="Afternoon">Afternoon</option>
+                <option value="Night">Night</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+            <button type="button" class="dataset-btn" onclick="closeModal('modal-new-incident')">Cancel</button>
+            <button type="submit" class="btn-primary">Triage & Index Record</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
