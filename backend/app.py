@@ -6,6 +6,13 @@ import os
 import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from fastapi import FastAPI, HTTPException, Query as FastAPIQuery
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

@@ -280,8 +280,20 @@ The application is architected for **zero-configuration 1-click deployment on Ra
 2. Log into **[Railway.app](https://railway.app/)**.
 3. Click **"New Project" > "Deploy from GitHub repo"** and select this repository.
 4. *(Optional)* Under the project **Variables** tab, set `GEMINI_API_KEY` if you wish to enable Google Gemini GenAI synthesis.
-5. Railway will detect Python 3.12, install dependencies from `requirements.txt`, and bind to the dynamic `$PORT`.
+5. Railway will automatically detect Python 3.12, install dependencies from `requirements.txt`, and bind to the dynamic `$PORT`.
 6. Once deployed, Railway provides a public URL (e.g., `https://esg-safety-dashboard-production.up.railway.app`) with health status reporting `200 OK`.
+
+### C. Steps to Deploy on Render (Alternative Cloud Host):
+This repository includes a `render.yaml` blueprint for 1-click Render deployment:
+1. Push this repository to your GitHub account.
+2. Log into **[Render.com](https://render.com/)** and click **"New" > "Web Service"**.
+3. Connect your GitHub repository `kishaaa8/safety_incident_intelligence_dashboard`.
+4. Configure service settings (Render auto-detects from `render.yaml` or `Procfile`):
+   - **Environment:** `Python 3`
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `uvicorn backend.app:app --host 0.0.0.0 --port $PORT`
+5. *(Optional)* In the **Environment Variables** section, add `GEMINI_API_KEY` with your key.
+6. Click **"Deploy Web Service"**. Render will build the environment, launch Uvicorn, and provide your live `.onrender.com` dashboard URL!
 
 ---
 

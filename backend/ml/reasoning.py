@@ -122,9 +122,10 @@ class IncidentReasoningEngine:
 
         # 3. Optional GenAI Refinement if GEMINI_API_KEY is available
         llm_enhanced = False
-        if self.gemini_api_key:
+        api_key = os.getenv("GEMINI_API_KEY", self.gemini_api_key)
+        if api_key:
             try:
-                enhanced_summary = self._call_gemini_api(narrative, category, severity, exec_summary)
+                enhanced_summary = self._call_gemini_api(narrative, category, severity, exec_summary, api_key)
                 if enhanced_summary:
                     exec_summary = enhanced_summary
                     llm_enhanced = True
@@ -142,9 +143,12 @@ class IncidentReasoningEngine:
             "historical_precedent_note": historical_context if historical_context else "No direct recurring precedent detected above threshold."
         }
 
-    def _call_gemini_api(self, narrative: str, category: str, severity: str, base_summary: str) -> Optional[str]:
+    def _call_gemini_api(self, narrative: str, category: str, severity: str, base_summary: str, api_key: Optional[str] = None) -> Optional[str]:
         """Call Google Gemini REST API endpoint for executive summary refinement."""
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
+        key = api_key or os.getenv("GEMINI_API_KEY", self.gemini_api_key)
+        if not key:
+            return None
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
         prompt = (
             f"You are the Head of EHS and Operational Risk for Greenko Renewable Energy. "
             f"Review this incident narrative: '{narrative}'. "
