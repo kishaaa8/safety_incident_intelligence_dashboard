@@ -147,11 +147,8 @@ def add_incident(incident: IncidentSubmission):
         "regulatory_framework": reasoning["compliance_framework"]
     }
 
-    # Append to current dataframe and update RAG index
-    import pandas as pd
-    new_row = pd.DataFrame([new_record])
-    pipeline_manager.current_df = pd.concat([pipeline_manager.current_df, new_row], ignore_index=True)
-    pipeline_manager.rag_engine.build_index(pipeline_manager.current_df)
+    # Persist to disk and update RAG index + classifier
+    pipeline_manager.persist_new_incident(new_record)
 
     return {
         "status": "success",

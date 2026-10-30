@@ -62,6 +62,36 @@ class DataPipelineManager:
             "columns": list(df.columns)
         }
 
+    def persist_new_incident(self, new_record: Dict[str, Any]):
+        """
+        Persist a newly logged incident both to active in-memory DataFrame
+        and directly to the on-disk CSV dataset so it remains permanent across server restarts.
+        """
+        import csv
+        new_row = pd.DataFrame([new_record])
+        if self.current_df is not None:
+            self.current_df = pd.concat([self.current_df, new_row], ignore_index=True)
+        else:
+            self.current_df = new_row
+
+        # Target file based on active dataset
+        if self.active_dataset_name == "dummy":
+            csv_path = DATA_DIR / "safety_esg_incidents.csv"
+        else:
+            csv_path = DATA_DIR / "safety_esg_incidents_expanded.csv"
+
+        # Save to disk with minimal quoting
+        self.current_df.to_csv(csv_path, index=False, quoting=csv.QUOTE_MINIMAL)
+
+        # Update RAG vector index with the new narrative
+        self.rag_engine.build_index(self.current_df)
+
+        # Retrain ML classifiers with the expanded data
+        try:
+            self.classifier.train(self.current_df)
+        except Exception:
+            pass
+
     def analyze_incident(self, narrative: str) -> Dict[str, Any]:
         """
         End-to-end incident intelligence pipeline:
